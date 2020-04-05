@@ -31,4 +31,3 @@ pwdgen is released und the [Zlib License](http://opensource.org/licenses/Zlib).
 ## Copyright
 
 pwdgen is (c) 2011-2012 Robert Weiler.
-
