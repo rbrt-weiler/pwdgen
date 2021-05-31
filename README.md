@@ -10,7 +10,7 @@ It was primarily a small side-project to do some C again. Do not expect rocket s
 
 ## Requirements
 
-Any C compiler should suffice. I only tested GCC on Linux.
+Any C compiler should suffice. I only tested GCC on Linux and macOS.
 
 ## Compiling
 
@@ -30,4 +30,4 @@ pwdgen is released und the [Zlib License](http://opensource.org/licenses/Zlib).
 
 ## Copyright
 
-pwdgen is (c) 2011-2012 Robert Weiler.
+pwdgen is (c) 2011-2012,2021 Robert Weiler.
