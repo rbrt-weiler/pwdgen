@@ -1,10 +1,11 @@
 /**
  * Creates passwords on the command line.
  *
- * Copyright (c) 2011-2012 Robert Weiler.
+ * Copyright (c) 2011-2012,2021 Robert Weiler.
  * Released under the Zlib License, see LICENSE.
  */
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -12,18 +13,18 @@
 
 //========================================================================
 
-#define PWDGEN_VERSION "2.0"
+#define PWDGEN_VERSION "2.1"
 
 //========================================================================
 
 char *pwdgen(int);
 char *sec_pwdgen(int, int);
-char check_sec_pwd(char *, int);
-char is_upper_case(char);
-char is_lower_case(char);
-char is_number(char);
-char is_special_char(char);
-char is_usable_char(char);
+int check_sec_pwd(char *, int);
+bool is_upper_case(char);
+bool is_lower_case(char);
+bool is_number(char);
+bool is_special_char(char);
+bool is_usable_char(char);
 void version();
 void usage();
 
@@ -72,20 +73,15 @@ int main(int argc, char **argv) {
 		return EXIT_FAILURE;
 	}
 
-	if (0 == pwdsec) {
-		while (0 < pwdcnt) {
+	while (0 < pwdcnt) {
+		if (0 == pwdsec) {
 			pwd = pwdgen(pwdlen);
-			printf("%s\n", pwd);
-			free(pwd);
-			--pwdcnt;
-		}
-	} else {
-		while (0 < pwdcnt) {
+		} else {
 			pwd = sec_pwdgen(pwdlen, pwdsec);
-			printf("%s\n", pwd);
-			free(pwd);
-			--pwdcnt;
 		}
+		printf("%s\n", pwd);
+		free(pwd);
+		--pwdcnt;
 	}
 
 	return 0;
@@ -96,23 +92,23 @@ int main(int argc, char **argv) {
 char *pwdgen(int len) {
 	char *pwd = (char *)calloc(sizeof(char), len + 1);
 	int ch;
-	int i, j;
+	int i;
 
 	srand(rand());
-	j = 0;
-	while (j < len) {
+	i = 0;
+	while (i < len) {
 		ch = rand() % 127;
 		if (44 > ch) {
 			ch = ch + 44;
 		}
-		if (0 != is_usable_char(ch)) {
-			pwd[j] = ch;
+		if (is_usable_char(ch)) {
+			pwd[i] = ch;
 		} else {
-			j--;
+			i--;
 		}
-		j++;
+		i++;
 	}
-	pwd[j] = 0;
+	pwd[i] = 0;
 
 	return pwd;
 }
@@ -125,7 +121,7 @@ char *sec_pwdgen(int len, int level) {
 	char *pwd3;
 	char *pwd4;
 	char *final_pwd;
-	int i, j;
+	int i;
 	int ctypes;
 
 	pwd1 = pwdgen(len);
@@ -134,26 +130,26 @@ char *sec_pwdgen(int len, int level) {
 	pwd4 = pwdgen(len);
 	final_pwd = (char *)calloc(sizeof(char), len + 1);
 	srand(rand());
-	for (j = 0; j < len; ++j) {
+	for (i = 0; i < len; ++i) {
 		switch (rand() % 4) {
 			case 0:
-				final_pwd[j] = pwd1[j];
+				final_pwd[i] = pwd1[i];
 				break;
 			case 1:
-				final_pwd[j] = pwd2[j];
+				final_pwd[i] = pwd2[i];
 				break;
 			case 2:
-				final_pwd[j] = pwd3[j];
+				final_pwd[i] = pwd3[i];
 				break;
 			case 3:
-				final_pwd[j] = pwd4[j];
+				final_pwd[i] = pwd4[i];
 				break;
 			default:
-				--j;
+				--i;
 				break;
 		}
 	}
-	final_pwd[j] = 0;
+	final_pwd[i] = 0;
 	free(pwd1);
 	free(pwd2);
 	free(pwd3);
@@ -170,7 +166,7 @@ char *sec_pwdgen(int len, int level) {
 
 //========================================================================
 
-char check_sec_pwd(char *pwd, int len) {
+int check_sec_pwd(char *pwd, int len) {
 	int i;
 	char ch;
 	char ucl;   // Upper Case Letter
@@ -185,13 +181,13 @@ char check_sec_pwd(char *pwd, int len) {
 
 	for (i = 0; i < len; ++i) {
 		ch = pwd[i];
-		if (0 != is_upper_case(ch)) {
+		if (is_upper_case(ch)) {
 			ucl = 1;
-		} else if (0 != is_lower_case(ch)) {
+		} else if (is_lower_case(ch)) {
 			lcl = 1;
-		} else if (0 != is_number(ch)) {
+		} else if (is_number(ch)) {
 			nmb = 1;
-		} else if (0 != is_special_char(ch)) {
+		} else if (is_special_char(ch)) {
 			sch = 1;
 		}
 	}
@@ -201,61 +197,61 @@ char check_sec_pwd(char *pwd, int len) {
 
 //========================================================================
 
-char is_upper_case(char ch) {
+bool is_upper_case(char ch) {
 	if (65 <= ch  &&  90 >= ch) {
-		return 1;
+		return true;
 	}
 
-	return 0;
+	return false;
 }
 
 //========================================================================
 
-char is_lower_case(char ch) {
+bool is_lower_case(char ch) {
 	if (97 <= ch  &&  122 >= ch) {
-		return 1;
+		return true;
 	}
 
-	return 0;
+	return false;
 }
 
 //========================================================================
 
-char is_number(char ch) {
+bool is_number(char ch) {
 	if (48 <= ch  &&  57 >= ch) {
-		return 1;
+		return true;
 	}
 
-	return 0;
+	return false;
 }
 
 //========================================================================
 
-char is_special_char(char ch) {
+bool is_special_char(char ch) {
 	if (33 == ch) {
-		return 1;
+		return true;
 	} else if (35 == ch) {
-		return 1;
+		return true;
 	} else if (37 == ch) {
-		return 1;
+		return true;
 	} else if (40 <= ch  &&  46 >= ch) {
-		return 1;
+		return true;
 	} else if (58 <= ch  &&  59 >= ch) {
-		return 1;
+		return true;
 	} else if (61 == ch) {
-		return 1;
+		return true;
 	} else if (63 <= ch  &&  64 >= ch) {
-		return 1;
+		return true;
 	} else if (95 == ch) {
-		return 1;
+		return true;
 	}
 
-	return 0;
+	return false;
 }
 
 //========================================================================
 
-char is_usable_char(char ch) {
+bool is_usable_char(char ch) {
 	return (is_upper_case(ch) + is_lower_case(ch) + is_number(ch)
 			+ is_special_char(ch));
 }
@@ -264,7 +260,7 @@ char is_usable_char(char ch) {
 
 void version() {
 	printf("pwdgen v%s - password creator\n", PWDGEN_VERSION);
-	printf("(c) 2011-2012 Robert Weiler.\n");
+	printf("(c) 2011-2012,2021 Robert Weiler.\n");
 	printf("Licensed under the Zlib License.\n");
 }
 
